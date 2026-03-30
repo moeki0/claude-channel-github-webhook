@@ -1,0 +1,20 @@
+{
+  "$schema": "https://code.claude.com/schemas/marketplace.json",
+  "name": "claude-channel-github-webhook",
+  "description": "GitHub Webhook Channel plugin for Claude Code",
+  "owner": {
+    "name": "moeki0",
+    "url": "https://github.com/moeki0"
+  },
+  "plugins": [
+    {
+      "name": "github-webhook",
+      "description": "GitHub Webhook events (PR reviews, CI failures, @claude mentions) as Claude Code Channel notifications",
+      "version": "2.0.0",
+      "source": {
+        "source": "github",
+        "repo": "moeki0/claude-channel-github-webhook"
+      }
+    }
+  ]
+}

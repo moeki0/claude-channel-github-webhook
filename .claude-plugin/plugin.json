@@ -1,0 +1,5 @@
+{
+  "name": "github-webhook",
+  "version": "2.0.0",
+  "description": "GitHub PR activity (reviews, CI failures, comments) as Claude Code Channel notifications — no tunnel required"
+}

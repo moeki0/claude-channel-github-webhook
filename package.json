@@ -1,0 +1,24 @@
+{
+  "name": "claude-channel-github-webhook",
+  "version": "2.0.0",
+  "description": "GitHub Channel plugin for Claude Code — polls PR activity, no tunnel required",
+  "type": "module",
+  "scripts": {
+    "build": "esbuild src/channel.ts --bundle --platform=node --format=esm --outfile=dist/channel.mjs",
+    "start": "npx tsx src/channel.ts",
+    "test": "node --experimental-vm-modules node_modules/.bin/jest",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "tsx": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.0.0",
+    "@types/node": "^22.0.0",
+    "esbuild": "^0.25.12",
+    "jest": "^29.0.0",
+    "ts-jest": "^29.0.0",
+    "typescript": "^5.0.0"
+  }
+}
