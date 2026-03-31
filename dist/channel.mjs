@@ -20894,7 +20894,8 @@ function buildIssueComment(payload, filter) {
     ].join("\n"),
     meta: {
       event: "issue_comment",
-      issue_title: issue2.title
+      issue_title: issue2.title,
+      ...comment.user ? { author: comment.user.login } : {}
     }
   };
 }
