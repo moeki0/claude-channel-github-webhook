@@ -141,6 +141,24 @@ describe("buildNotification", () => {
     expect(buildNotification("issue_comment", payload, mentionEvents)).toBeNull();
   });
 
+  it("pull_request_review で title が欠落している場合でも動作する", () => {
+    const payload = {
+      pull_request: {
+        number: 1564,
+        html_url: "https://github.com/org/repo/pull/1564",
+      },
+      review: {
+        user: { login: "moeki0" },
+        state: "commented",
+        body: "looks good",
+      },
+    };
+    const result = buildNotification("pull_request_review", payload, defaultEvents);
+    expect(result).not.toBeNull();
+    expect(result!.content).not.toContain("undefined");
+    expect(result!.content).toContain("#1564");
+  });
+
   it("events に含まれないイベントは null を返す", () => {
     expect(buildNotification("push", {}, defaultEvents)).toBeNull();
   });

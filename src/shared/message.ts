@@ -31,7 +31,7 @@ export function buildNotification(
 
 function buildPrReview(payload: Record<string, unknown>): Notification {
   const pr = payload.pull_request as {
-    title: string;
+    title?: string;
     number: number;
     html_url: string;
   };
@@ -42,7 +42,7 @@ function buildPrReview(payload: Record<string, unknown>): Notification {
   };
   return {
     content: [
-      `PR review on "${pr.title}" (#${pr.number})`,
+      `PR review on "${pr.title ?? `#${pr.number}`}" (#${pr.number})`,
       `Reviewer: ${review.user.login}`,
       `State: ${review.state}`,
       `Comment: ${review.body ?? "(none)"}`,
