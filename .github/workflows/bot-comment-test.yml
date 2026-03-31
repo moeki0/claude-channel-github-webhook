@@ -1,0 +1,16 @@
+name: Bot Comment Test
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  comment:
+    runs-on: ubuntu-latest
+    steps:
+      - run: gh pr comment ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --body "Test comment from github-actions[bot]"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: gh pr review ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --comment --body "Test review from github-actions[bot]"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
