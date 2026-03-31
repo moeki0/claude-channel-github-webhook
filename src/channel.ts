@@ -40,7 +40,7 @@ debugLog(`Trusted users: ${trustedUsers.join(", ")}`);
 const muteManager = new MuteManager();
 
 const mcp = new Server(
-  { name: "github-webhook", version: "2.3.0" },
+  { name: "github-webhook", version: "2.3.1" },
   {
     capabilities: {
       experimental: { "claude/channel": {} },
@@ -148,7 +148,7 @@ let currentBranch: string | null = null;
 let lastConflictState = false;
 
 
-async function checkForPr(): Promise<boolean> {
+async function checkForPr(): Promise<boolean | "final"> {
   const branch = getCurrentBranch();
   debugLog(`current branch: ${branch}`);
 
@@ -173,17 +173,17 @@ async function checkForPr(): Promise<boolean> {
 
   debugLog(`No open PR for branch ${branch}`);
   if (currentPrNumber) {
-    log("PR closed or not found, idling");
-    currentPrNumber = null;
+    log("PR closed or merged, final poll before idling");
+    return "final";
   }
   return false;
 }
 
 async function poll() {
   try {
-    const hasPr = await checkForPr();
+    const prStatus = await checkForPr();
 
-    if (hasPr) {
+    if (prStatus) {
       // Events API
       debugLog("fetching events...");
       const allEvents = await fetchEvents(owner, repo, token, since);
@@ -302,6 +302,13 @@ async function poll() {
           set.clear();
           arr.slice(-limit).forEach((id) => (set as Set<typeof id>).add(id));
         }
+      }
+
+      // PRがクローズ/マージされた場合、最終ポーリング後にアイドルに移行
+      if (prStatus === "final") {
+        log("Final poll done, idling");
+        currentPrNumber = null;
+        currentBranch = null;
       }
     }
   } catch (err) {

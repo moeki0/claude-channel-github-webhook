@@ -36,3 +36,18 @@ jobs:
             echo "Version mismatch! All three must match."
             exit 1
           fi
+      - name: Check version bump on source changes
+        if: github.event_name == 'pull_request'
+        run: |
+          SRC_CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- 'src/' | head -1)
+          if [ -z "$SRC_CHANGED" ]; then
+            echo "No source changes, skipping version bump check."
+            exit 0
+          fi
+          CURRENT=$(node -p "require('./package.json').version")
+          BASE=$(git show origin/${{ github.base_ref }}:package.json | node -p "JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')).version")
+          echo "Base: $BASE → Current: $CURRENT"
+          if [ "$CURRENT" = "$BASE" ]; then
+            echo "Source files changed but version was not bumped!"
+            exit 1
+          fi

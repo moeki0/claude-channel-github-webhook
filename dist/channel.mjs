@@ -21229,7 +21229,7 @@ log(`Detected ${owner}/${repo}`);
 debugLog(`Trusted users: ${trustedUsers.join(", ")}`);
 var muteManager = new MuteManager();
 var mcp = new Server(
-  { name: "github-webhook", version: "2.3.0" },
+  { name: "github-webhook", version: "2.3.1" },
   {
     capabilities: {
       experimental: { "claude/channel": {} },
@@ -21345,15 +21345,15 @@ async function checkForPr() {
   }
   debugLog(`No open PR for branch ${branch}`);
   if (currentPrNumber) {
-    log("PR closed or not found, idling");
-    currentPrNumber = null;
+    log("PR closed or merged, final poll before idling");
+    return "final";
   }
   return false;
 }
 async function poll() {
   try {
-    const hasPr = await checkForPr();
-    if (hasPr) {
+    const prStatus = await checkForPr();
+    if (prStatus) {
       debugLog("fetching events...");
       const allEvents = await fetchEvents(owner, repo, token, since);
       const prFiltered = currentPrNumber ? filterByPr(allEvents, currentPrNumber) : allEvents;
@@ -21456,6 +21456,11 @@ ${conflict.files.map((f) => `- ${f}`).join("\n") || "(unknown)"}`,
           set2.clear();
           arr.slice(-limit).forEach((id) => set2.add(id));
         }
+      }
+      if (prStatus === "final") {
+        log("Final poll done, idling");
+        currentPrNumber = null;
+        currentBranch = null;
       }
     }
   } catch (err) {
