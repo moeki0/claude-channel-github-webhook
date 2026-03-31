@@ -20840,7 +20840,7 @@ function buildPrReview(payload) {
   const review = payload.review;
   return {
     content: [
-      `PR review on "${pr.title}" (#${pr.number})`,
+      `PR review on "${pr.title ?? `#${pr.number}`}" (#${pr.number})`,
       `Reviewer: ${review.user.login}`,
       `State: ${review.state}`,
       `Comment: ${review.body ?? "(none)"}`,
@@ -20936,6 +20936,19 @@ function loadConfig(file2 = CONFIG_PATH) {
 }
 
 // src/shared/github.ts
+function filterByPr(items, prNumber) {
+  return items.filter((item) => {
+    const pr = item.payload.pull_request;
+    if (pr?.number != null) return pr.number === prNumber;
+    const issue2 = item.payload.issue;
+    if (issue2?.number != null) return issue2.number === prNumber;
+    const checkRun = item.payload.check_run;
+    if (checkRun?.pull_requests) {
+      return checkRun.pull_requests.some((p) => p.number === prNumber);
+    }
+    return false;
+  });
+}
 function filterEvents(items, events2) {
   return items.filter((item) => {
     const filter = events2[item.event];
@@ -21191,7 +21204,7 @@ log(`Detected ${owner}/${repo}`);
 debugLog(`Trusted users: ${trustedUsers.join(", ")}`);
 var muteManager = new MuteManager();
 var mcp = new Server(
-  { name: "github-webhook", version: "2.0.0" },
+  { name: "github-webhook", version: "2.1.0" },
   {
     capabilities: {
       experimental: { "claude/channel": {} },
@@ -21260,16 +21273,15 @@ async function notify(params) {
     return;
   }
   if (params.meta.author) {
-    if (params.meta.author.endsWith("[bot]")) {
-      debugLog(`skipping bot: ${params.meta.author}`);
-      return;
-    }
     if (trustedUsers.length > 0) {
       if (!trustedUsers.includes(params.meta.author)) {
-        debugLog(`blocked external author: ${params.meta.author}`);
+        debugLog(`blocked (not trusted): ${params.meta.author}`);
         return;
       }
-      params.meta.trust = "team";
+      params.meta.trust = params.meta.author.endsWith("[bot]") ? "bot" : "team";
+    } else if (params.meta.author.endsWith("[bot]")) {
+      debugLog(`skipping bot: ${params.meta.author}`);
+      return;
     }
   }
   await mcp.notification({
@@ -21319,8 +21331,9 @@ async function poll() {
     if (hasPr) {
       debugLog("fetching events...");
       const allEvents = await fetchEvents(owner, repo, token, since);
-      const filtered = filterEvents(allEvents, events);
-      debugLog(`events: ${allEvents.length} total, ${filtered.length} after filter`);
+      const prFiltered = currentPrNumber ? filterByPr(allEvents, currentPrNumber) : allEvents;
+      const filtered = filterEvents(prFiltered, events);
+      debugLog(`events: ${allEvents.length} total, ${prFiltered.length} for PR, ${filtered.length} after filter`);
       for (const item of filtered) {
         if (seenIds.has(item.id)) continue;
         seenIds.add(item.id);
