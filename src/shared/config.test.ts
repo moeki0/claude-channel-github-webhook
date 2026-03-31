@@ -89,6 +89,18 @@ describe("loadConfig", () => {
     expect(config.trustedUsers).toEqual(["moeki0", "alice"]);
   });
 
+  it("trustedBots のデフォルトは空配列", () => {
+    fs.writeFileSync(tmpFile, JSON.stringify({}));
+    const config = loadConfig(tmpFile);
+    expect(config.trustedBots).toEqual([]);
+  });
+
+  it("trustedBots を設定できる", () => {
+    fs.writeFileSync(tmpFile, JSON.stringify({ trustedBots: ["claude-code[bot]", "dependabot[bot]"] }));
+    const config = loadConfig(tmpFile);
+    expect(config.trustedBots).toEqual(["claude-code[bot]", "dependabot[bot]"]);
+  });
+
   it("debug のデフォルトは false", () => {
     fs.writeFileSync(tmpFile, JSON.stringify({}));
     const config = loadConfig(tmpFile);
