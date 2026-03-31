@@ -87,8 +87,9 @@ The `trustedUsers` list controls whose comments reach Claude Code:
 
 - **Repo owner** is always trusted automatically
 - Users in `trustedUsers` are marked `trust="team"` and their comments are delivered
+- GitHub Apps can be trusted by adding their full name (e.g. `"github-actions[bot]"`) to `trustedUsers` — they are marked `trust="bot"`
 - All other users are **blocked** — their comments never reach Claude
-- Bot accounts (`[bot]` suffix) are always blocked
+- When `trustedUsers` is empty, bot accounts (`[bot]` suffix) are blocked by default
 
 When `trustedUsers` is empty (default), only the repo owner's comments are delivered.
 
@@ -149,6 +150,26 @@ npm install
 npm test        # Run tests
 npm run lint    # Type check
 npm run build   # Build before commit
+```
+
+### Running locally with Claude Code
+
+Instead of installing via the plugin marketplace, you can run the source directly as an MCP server for development:
+
+```bash
+# Register as a user-level MCP server
+claude mcp add github-webhook -s user -- npx tsx /path/to/claude-channel-github-webhook/src/channel.ts
+
+# Start Claude Code with the channel enabled
+claude --dangerously-load-development-channels mcp:github-webhook
+```
+
+This runs `src/channel.ts` directly via `tsx`, so source changes are reflected on restart without needing `npm run build`.
+
+If `npx tsx` fails to resolve (e.g. `tsx` is only a local dependency), use the full path:
+
+```bash
+claude mcp add github-webhook -s user -- /path/to/claude-channel-github-webhook/node_modules/.bin/tsx /path/to/claude-channel-github-webhook/src/channel.ts
 ```
 
 ## Status
