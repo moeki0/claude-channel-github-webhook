@@ -91,7 +91,7 @@ function buildCheckRun(payload: Record<string, unknown>, filter: EventFilter): N
 
 function buildIssueComment(payload: Record<string, unknown>, filter: EventFilter): Notification | null {
   const issue = payload.issue as { title: string };
-  const comment = payload.comment as { body: string; html_url: string };
+  const comment = payload.comment as { body: string; html_url: string; user?: { login: string } };
 
   if (filter !== true && filter.mention) {
     const pattern = new RegExp(`${filter.mention.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`);
@@ -107,6 +107,7 @@ function buildIssueComment(payload: Record<string, unknown>, filter: EventFilter
     meta: {
       event: "issue_comment",
       issue_title: issue.title,
+      ...(comment.user ? { author: comment.user.login } : {}),
     },
   };
 }
