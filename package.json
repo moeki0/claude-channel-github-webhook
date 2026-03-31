@@ -1,6 +1,6 @@
 {
   "name": "claude-channel-github-webhook",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "description": "GitHub Channel plugin for Claude Code — polls PR activity, no tunnel required",
   "type": "module",
   "scripts": {
