@@ -20844,11 +20844,12 @@ function buildPrReview(payload) {
       `Reviewer: ${review.user.login}`,
       `State: ${review.state}`,
       `Comment: ${review.body ?? "(none)"}`,
-      `URL: ${pr.html_url}`
+      ...pr.html_url ? [`URL: ${pr.html_url}`] : []
     ].join("\n"),
     meta: {
       event: "pull_request_review",
       pr_number: String(pr.number),
+      author: review.user.login,
       reviewer: review.user.login,
       state: review.state
     }
@@ -21204,7 +21205,7 @@ log(`Detected ${owner}/${repo}`);
 debugLog(`Trusted users: ${trustedUsers.join(", ")}`);
 var muteManager = new MuteManager();
 var mcp = new Server(
-  { name: "github-webhook", version: "2.1.1" },
+  { name: "github-webhook", version: "2.1.2" },
   {
     capabilities: {
       experimental: { "claude/channel": {} },

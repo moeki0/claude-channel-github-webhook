@@ -29,6 +29,17 @@ describe("buildNotification", () => {
     expect(result!.content).toContain("reviewer");
     expect(result!.meta.event).toBe("pull_request_review");
     expect(result!.meta.pr_number).toBe("42");
+    expect(result!.meta.author).toBe("reviewer");
+  });
+
+  it("pull_request_review で html_url が欠落している場合でも undefined にならない", () => {
+    const payload = {
+      pull_request: { number: 1 },
+      review: { user: { login: "bot" }, state: "commented", body: "test" },
+    };
+    const result = buildNotification("pull_request_review", payload, defaultEvents);
+    expect(result).not.toBeNull();
+    expect(result!.content).not.toContain("undefined");
   });
 
   it("check_run 失敗のメッセージを組み立てる", () => {
