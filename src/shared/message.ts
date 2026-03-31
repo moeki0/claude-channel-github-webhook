@@ -33,7 +33,7 @@ function buildPrReview(payload: Record<string, unknown>): Notification {
   const pr = payload.pull_request as {
     title?: string;
     number: number;
-    html_url: string;
+    html_url?: string;
   };
   const review = payload.review as {
     user: { login: string };
@@ -46,11 +46,12 @@ function buildPrReview(payload: Record<string, unknown>): Notification {
       `Reviewer: ${review.user.login}`,
       `State: ${review.state}`,
       `Comment: ${review.body ?? "(none)"}`,
-      `URL: ${pr.html_url}`,
+      ...(pr.html_url ? [`URL: ${pr.html_url}`] : []),
     ].join("\n"),
     meta: {
       event: "pull_request_review",
       pr_number: String(pr.number),
+      author: review.user.login,
       reviewer: review.user.login,
       state: review.state,
     },
