@@ -124,9 +124,11 @@ describe("buildNotification", () => {
   it("issue_comment: デフォルト(true)なら全コメントを通過させる", () => {
     const payload = {
       issue: { title: "Bug report" },
-      comment: { body: "Just a regular comment", html_url: "https://example.com" },
+      comment: { body: "Just a regular comment", html_url: "https://example.com", user: { login: "alice" } },
     };
-    expect(buildNotification("issue_comment", payload, defaultEvents)).not.toBeNull();
+    const result = buildNotification("issue_comment", payload, defaultEvents);
+    expect(result).not.toBeNull();
+    expect(result!.meta.author).toBe("alice");
   });
 
   it("issue_comment: mention フィルタで @claude のみ通過させる", () => {
