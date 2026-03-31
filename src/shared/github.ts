@@ -7,6 +7,32 @@ export interface GitHubEvent {
   payload: Record<string, unknown>;
 }
 
+export function filterByPr(
+  items: GitHubEvent[],
+  prNumber: number,
+): GitHubEvent[] {
+  return items.filter((item) => {
+    // pull_request_review, pull_request: payload.pull_request.number
+    const pr = item.payload.pull_request as { number?: number } | undefined;
+    if (pr?.number != null) return pr.number === prNumber;
+
+    // issue_comment: payload.issue.number
+    const issue = item.payload.issue as { number?: number } | undefined;
+    if (issue?.number != null) return issue.number === prNumber;
+
+    // check_run: payload.check_run.pull_requests[].number
+    const checkRun = item.payload.check_run as {
+      pull_requests?: Array<{ number: number }>;
+    } | undefined;
+    if (checkRun?.pull_requests) {
+      return checkRun.pull_requests.some((p) => p.number === prNumber);
+    }
+
+    // PR番号を特定できないイベントは除外
+    return false;
+  });
+}
+
 export function filterEvents(
   items: GitHubEvent[],
   events: Record<string, EventFilter>,

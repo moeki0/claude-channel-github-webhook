@@ -1,5 +1,5 @@
 import { describe, it, expect } from "@jest/globals";
-import { filterEvents, normalizeComment } from "./github";
+import { filterEvents, filterByPr, normalizeComment } from "./github";
 import type { GitHubEvent, PrComment, ReviewComment } from "./github";
 
 describe("filterEvents", () => {
@@ -44,6 +44,75 @@ describe("filterEvents", () => {
       { id: "6", event: "push", created_at: "2026-03-30T00:00:00Z", payload: {} },
     ];
     expect(filterEvents(items, events)).toHaveLength(0);
+  });
+});
+
+describe("filterByPr", () => {
+  it("pull_request_review を PR 番号でフィルタする", () => {
+    const items: GitHubEvent[] = [
+      {
+        id: "1",
+        event: "pull_request_review",
+        created_at: "2026-03-30T00:00:00Z",
+        payload: { pull_request: { number: 42 }, review: { state: "approved" } },
+      },
+      {
+        id: "2",
+        event: "pull_request_review",
+        created_at: "2026-03-30T00:00:00Z",
+        payload: { pull_request: { number: 99 }, review: { state: "approved" } },
+      },
+    ];
+    const result = filterByPr(items, 42);
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe("1");
+  });
+
+  it("issue_comment を PR 番号でフィルタする", () => {
+    const items: GitHubEvent[] = [
+      {
+        id: "3",
+        event: "issue_comment",
+        created_at: "2026-03-30T00:00:00Z",
+        payload: { issue: { number: 42 }, comment: { body: "@claude help" } },
+      },
+      {
+        id: "4",
+        event: "issue_comment",
+        created_at: "2026-03-30T00:00:00Z",
+        payload: { issue: { number: 10 }, comment: { body: "@claude help" } },
+      },
+    ];
+    const result = filterByPr(items, 42);
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe("3");
+  });
+
+  it("check_run を pull_requests 配列の PR 番号でフィルタする", () => {
+    const items: GitHubEvent[] = [
+      {
+        id: "5",
+        event: "check_run",
+        created_at: "2026-03-30T00:00:00Z",
+        payload: { check_run: { conclusion: "failure", pull_requests: [{ number: 42 }] } },
+      },
+      {
+        id: "6",
+        event: "check_run",
+        created_at: "2026-03-30T00:00:00Z",
+        payload: { check_run: { conclusion: "failure", pull_requests: [{ number: 99 }] } },
+      },
+    ];
+    const result = filterByPr(items, 42);
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe("5");
+  });
+
+  it("PR 番号を特定できないイベントは除外する", () => {
+    const items: GitHubEvent[] = [
+      { id: "7", event: "push", created_at: "2026-03-30T00:00:00Z", payload: {} },
+    ];
+    expect(filterByPr(items, 42)).toHaveLength(0);
   });
 });
 

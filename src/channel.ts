@@ -8,7 +8,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { buildNotification } from "./shared/message";
 import { loadConfig } from "./shared/config";
-import { fetchEvents, filterEvents, findPrForBranch, fetchFailedJobLogs, fetchPrComments, fetchCheckRuns } from "./shared/github";
+import { fetchEvents, filterEvents, filterByPr, findPrForBranch, fetchFailedJobLogs, fetchPrComments, fetchCheckRuns } from "./shared/github";
 import { detectRepo, getCurrentBranch, checkConflictWithBase } from "./shared/git";
 import { MuteManager } from "./shared/mute";
 
@@ -188,8 +188,9 @@ async function poll() {
       // Events API
       debugLog("fetching events...");
       const allEvents = await fetchEvents(owner, repo, token, since);
-      const filtered = filterEvents(allEvents, events);
-      debugLog(`events: ${allEvents.length} total, ${filtered.length} after filter`);
+      const prFiltered = currentPrNumber ? filterByPr(allEvents, currentPrNumber) : allEvents;
+      const filtered = filterEvents(prFiltered, events);
+      debugLog(`events: ${allEvents.length} total, ${prFiltered.length} for PR, ${filtered.length} after filter`);
 
       for (const item of filtered) {
         if (seenIds.has(item.id)) continue;
