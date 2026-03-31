@@ -24,6 +24,9 @@ export function buildNotification(
     case "issue_comment":
       return buildIssueComment(payload, filter);
 
+    case "pull_request":
+      return buildPullRequest(payload);
+
     default:
       return buildGeneric(event, payload);
   }
@@ -108,6 +111,36 @@ function buildIssueComment(payload: Record<string, unknown>, filter: EventFilter
       event: "issue_comment",
       issue_title: issue.title,
       ...(comment.user ? { author: comment.user.login } : {}),
+    },
+  };
+}
+
+function buildPullRequest(payload: Record<string, unknown>): Notification | null {
+  const action = payload.action as string;
+  if (action !== "closed") return null;
+
+  const pr = payload.pull_request as {
+    number: number;
+    title?: string;
+    html_url?: string;
+    merged?: boolean;
+    user?: { login: string };
+  };
+
+  const status = pr.merged ? "merged" : "closed";
+  const title = pr.title ?? `#${pr.number}`;
+
+  return {
+    content: [
+      `PR ${status}: "${title}" (#${pr.number})`,
+      ...(pr.html_url ? [`URL: ${pr.html_url}`] : []),
+    ].join("\n"),
+    meta: {
+      event: "pull_request",
+      action,
+      pr_number: String(pr.number),
+      status,
+      ...(pr.user ? { author: pr.user.login } : {}),
     },
   };
 }

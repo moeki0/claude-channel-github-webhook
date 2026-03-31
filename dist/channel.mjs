@@ -20831,6 +20831,8 @@ function buildNotification(event, payload, events2) {
       return buildCheckRun(payload, filter);
     case "issue_comment":
       return buildIssueComment(payload, filter);
+    case "pull_request":
+      return buildPullRequest(payload);
     default:
       return buildGeneric(event, payload);
   }
@@ -20899,6 +20901,26 @@ function buildIssueComment(payload, filter) {
     }
   };
 }
+function buildPullRequest(payload) {
+  const action = payload.action;
+  if (action !== "closed") return null;
+  const pr = payload.pull_request;
+  const status = pr.merged ? "merged" : "closed";
+  const title = pr.title ?? `#${pr.number}`;
+  return {
+    content: [
+      `PR ${status}: "${title}" (#${pr.number})`,
+      ...pr.html_url ? [`URL: ${pr.html_url}`] : []
+    ].join("\n"),
+    meta: {
+      event: "pull_request",
+      action,
+      pr_number: String(pr.number),
+      status,
+      ...pr.user ? { author: pr.user.login } : {}
+    }
+  };
+}
 function buildGeneric(event, payload) {
   return {
     content: JSON.stringify(payload, null, 2).slice(0, 2e3),
@@ -20914,6 +20936,7 @@ import { execSync } from "node:child_process";
 var CONFIG_PATH = path.join(os.homedir(), ".config", "github-webhook-channel.json");
 var DEFAULT_EVENTS = {
   pull_request_review: true,
+  pull_request: true,
   check_run: { conclusion: ["failure"] },
   issue_comment: true
 };
@@ -21206,7 +21229,7 @@ log(`Detected ${owner}/${repo}`);
 debugLog(`Trusted users: ${trustedUsers.join(", ")}`);
 var muteManager = new MuteManager();
 var mcp = new Server(
-  { name: "github-webhook", version: "2.2.0" },
+  { name: "github-webhook", version: "2.3.0" },
   {
     capabilities: {
       experimental: { "claude/channel": {} },
