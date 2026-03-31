@@ -21206,7 +21206,7 @@ log(`Detected ${owner}/${repo}`);
 debugLog(`Trusted users: ${trustedUsers.join(", ")}`);
 var muteManager = new MuteManager();
 var mcp = new Server(
-  { name: "github-webhook", version: "2.1.2" },
+  { name: "github-webhook", version: "2.2.0" },
   {
     capabilities: {
       experimental: { "claude/channel": {} },

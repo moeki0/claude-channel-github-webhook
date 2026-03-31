@@ -24,3 +24,15 @@ jobs:
       - run: npm run build
       - name: Check dist is up to date
         run: git diff --exit-code dist/ || (echo "dist/ is out of date. Run 'npm run build' and commit." && exit 1)
+      - name: Check version consistency
+        run: |
+          PKG=$(node -p "require('./package.json').version")
+          PLUGIN=$(node -p "require('./.claude-plugin/plugin.json').version")
+          MCP=$(node -p "require('fs').readFileSync('src/channel.ts','utf8').match(/version: \"([^\"]+)\"/)[1]")
+          echo "package.json: $PKG"
+          echo "plugin.json:  $PLUGIN"
+          echo "channel.ts:   $MCP"
+          if [ "$PKG" != "$PLUGIN" ] || [ "$PKG" != "$MCP" ]; then
+            echo "Version mismatch! All three must match."
+            exit 1
+          fi

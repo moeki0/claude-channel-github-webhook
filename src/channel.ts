@@ -40,7 +40,7 @@ debugLog(`Trusted users: ${trustedUsers.join(", ")}`);
 const muteManager = new MuteManager();
 
 const mcp = new Server(
-  { name: "github-webhook", version: "2.1.2" },
+  { name: "github-webhook", version: "2.2.0" },
   {
     capabilities: {
       experimental: { "claude/channel": {} },
