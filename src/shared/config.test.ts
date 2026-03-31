@@ -61,6 +61,7 @@ describe("loadConfig", () => {
     fs.writeFileSync(tmpFile, JSON.stringify({}));
     const config = loadConfig(tmpFile);
     expect(config.events.pull_request_review).toBe(true);
+    expect(config.events.pull_request).toBe(true);
     expect(config.events.check_run).toEqual({ conclusion: ["failure"] });
     expect(config.events.issue_comment).toBe(true);
   });

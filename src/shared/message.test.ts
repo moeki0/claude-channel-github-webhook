@@ -172,6 +172,60 @@ describe("buildNotification", () => {
     expect(result!.content).toContain("#1564");
   });
 
+  it("pull_request: マージされた場合の通知", () => {
+    const events = { ...defaultEvents, pull_request: true as const };
+    const payload = {
+      action: "closed",
+      pull_request: {
+        number: 42,
+        title: "Add feature",
+        html_url: "https://github.com/org/repo/pull/42",
+        merged: true,
+        user: { login: "alice" },
+      },
+    };
+    const result = buildNotification("pull_request", payload, events);
+    expect(result).not.toBeNull();
+    expect(result!.content).toContain("merged");
+    expect(result!.meta.event).toBe("pull_request");
+    expect(result!.meta.action).toBe("closed");
+    expect(result!.meta.author).toBe("alice");
+  });
+
+  it("pull_request: クローズされた場合の通知", () => {
+    const events = { ...defaultEvents, pull_request: true as const };
+    const payload = {
+      action: "closed",
+      pull_request: {
+        number: 42,
+        title: "Add feature",
+        html_url: "https://github.com/org/repo/pull/42",
+        merged: false,
+        user: { login: "alice" },
+      },
+    };
+    const result = buildNotification("pull_request", payload, events);
+    expect(result).not.toBeNull();
+    expect(result!.content).toContain("closed");
+    expect(result!.content).not.toContain("merged");
+  });
+
+  it("pull_request: open など他のアクションは無視する", () => {
+    const events = { ...defaultEvents, pull_request: true as const };
+    const payload = {
+      action: "opened",
+      pull_request: {
+        number: 42,
+        title: "Add feature",
+        html_url: "https://github.com/org/repo/pull/42",
+        merged: false,
+        user: { login: "alice" },
+      },
+    };
+    const result = buildNotification("pull_request", payload, events);
+    expect(result).toBeNull();
+  });
+
   it("events に含まれないイベントは null を返す", () => {
     expect(buildNotification("push", {}, defaultEvents)).toBeNull();
   });

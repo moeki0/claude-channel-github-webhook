@@ -19,6 +19,7 @@ export const CONFIG_PATH = path.join(os.homedir(), ".config", "github-webhook-ch
 
 const DEFAULT_EVENTS: Record<string, EventFilter> = {
   pull_request_review: true,
+  pull_request: true,
   check_run: { conclusion: ["failure"] },
   issue_comment: true,
 };

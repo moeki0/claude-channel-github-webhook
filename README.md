@@ -7,6 +7,7 @@ A Claude Code Channel plugin that delivers GitHub PR events as real-time notific
 ## Features
 
 - **PR comments** — conversation and inline review comments with diff hunks
+- **PR close/merge** — notified when the current PR is merged or closed
 - **CI failure logs** — fetched and attached to notifications
 - **Merge conflict detection** — checks against base branch every poll cycle
 - **Branch switch auto-follow** — watches `.git/HEAD`, re-targets when you checkout
@@ -55,6 +56,7 @@ Create `~/.config/github-webhook-channel.json` to customize:
   "trustedUsers": ["teammate1", "teammate2"],
   "events": {
     "pull_request_review": true,
+    "pull_request": true,
     "check_run": { "conclusion": ["failure"] },
     "issue_comment": true
   },
@@ -69,7 +71,7 @@ All fields are optional. Defaults are applied for anything omitted.
 | `token`        | GitHub token                                             | Auto-detect from `gh` CLI           |
 | `pollInterval` | Polling interval in ms                                   | `30000` (30s)                       |
 | `trustedUsers` | GitHub usernames to trust (repo owner is always trusted) | `[]`                                |
-| `events`       | Event filter rules (see below)                           | PR reviews + CI failures + comments |
+| `events`       | Event filter rules (see below)                           | PR reviews + close/merge + CI failures + comments |
 | `debug`        | Enable verbose logging                                   | `false`                             |
 
 Environment variable overrides: `GITHUB_TOKEN`, `GH_TOKEN`, `GH_WEBHOOK_DEBUG=true`.
