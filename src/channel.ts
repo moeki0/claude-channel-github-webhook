@@ -13,7 +13,7 @@ import { detectRepo, getCurrentBranch, checkConflictWithBase } from "./shared/gi
 import { MuteManager } from "./shared/mute";
 
 const config = loadConfig();
-const { token, pollInterval, events, trustedUsers, trustedBots, debug } = config;
+const { token, pollInterval, events, trustedUsers, debug } = config;
 
 function log(msg: string) {
   process.stderr.write(`[github-webhook] ${msg}\n`);
@@ -119,20 +119,15 @@ async function notify(params: NotificationParams) {
 
   // Trust tier: block external authors, skip bots
   if (params.meta.author) {
-    if (params.meta.author.endsWith("[bot]")) {
-      if (trustedBots.includes(params.meta.author)) {
-        debugLog(`trusted bot: ${params.meta.author}`);
-        params.meta.trust = "bot";
-      } else {
-        debugLog(`skipping bot: ${params.meta.author}`);
-        return;
-      }
-    } else if (trustedUsers.length > 0) {
+    if (trustedUsers.length > 0) {
       if (!trustedUsers.includes(params.meta.author)) {
-        debugLog(`blocked external author: ${params.meta.author}`);
+        debugLog(`blocked (not trusted): ${params.meta.author}`);
         return;
       }
-      params.meta.trust = "team";
+      params.meta.trust = params.meta.author.endsWith("[bot]") ? "bot" : "team";
+    } else if (params.meta.author.endsWith("[bot]")) {
+      debugLog(`skipping bot: ${params.meta.author}`);
+      return;
     }
   }
 

@@ -12,7 +12,6 @@ export interface Config {
   pollInterval: number;
   events: Record<string, EventFilter>;
   trustedUsers: string[];
-  trustedBots: string[];
   debug: boolean;
 }
 
@@ -44,8 +43,7 @@ export function loadConfig(file = CONFIG_PATH): Config {
   const events = (raw.events as Record<string, EventFilter>) ?? DEFAULT_EVENTS;
 
   const trustedUsers = (raw.trustedUsers as string[]) ?? [];
-  const trustedBots = (raw.trustedBots as string[]) ?? [];
   const debug = (process.env.GH_WEBHOOK_DEBUG === "true") || (raw.debug as boolean) === true;
 
-  return { token, pollInterval, events, trustedUsers, trustedBots, debug };
+  return { token, pollInterval, events, trustedUsers, debug };
 }
